@@ -1,4 +1,6 @@
 @echo off
+REM UAC Bypass source
+REM http://stackoverflow.com/questions/7044985/how-can-i-auto-elevate-my-batch-file-so-that-it-requests-from-uac-administrator
 :::::::::::::::::::::::::::::::::::::::::
 :: Automatically check & get admin rights
 :::::::::::::::::::::::::::::::::::::::::
