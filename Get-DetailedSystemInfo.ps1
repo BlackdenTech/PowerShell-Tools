@@ -4,13 +4,16 @@ function Get-DetailedSystemInfo {
     [CmdletBinding()]
     
     param(
-        [Parameter(Mandatory=$True)]
+        [Parameter(Mandatory=$false)]
         [string[]]$ComputerName
     )
 
     BEGIN {
         $outputObj = $null
         $outputObj = @()
+        if (!$ComputerName) {
+            $ComputerName = 'localhost'
+        }
     }
 
     PROCESS {
@@ -45,19 +48,27 @@ function Get-DetailedSystemInfo {
             }
 
             $ip = Test-Connection -ComputerName $os.PSComputerName -Count 1
-            $pageFile = Get-WmiObject Win32_PageFileusage
+            $ipObj = @{
+                'IPV4Address'="$($ip.IPV4Address)";
+                'IPV6Address'="$($ip.IPV6Address)"
+            }
+
+            $pageFile = Get-WmiObject Win32_PageFileusage -ComputerName $computer
+            $pagefileObj = @{
+                'Size'="$($pageFile.AllocatedBaseSize) MB";
+                'Location'="$($pageFile.Caption)"
+            }
 
             $tempObj | Add-Member -MemberType NoteProperty -Name ComputerName -Value $os.PSComputerName
             $tempObj | Add-Member -MemberType NoteProperty -Name OperatingSystem -Value $os.Caption
-            $tempObj | Add-Member -MemberType NoteProperty -Name IPV4Address -Value $ip.IPV4Address
-            $tempObj | Add-Member -MemberType NoteProperty -Name IPV6Address -Value $ip.IPV6Address
+            $tempObj | Add-Member -MemberType NoteProperty -Name IP -Value $ipObj
             $tempObj | Add-Member -MemberType NoteProperty -Name Disks -Value $diskobj
-            $tempObj | Add-Member -MemberType NoteProperty -Name PageFile -Value "$(($pageFile.AllocatedBaseSize / 1kb).ToString('#.##')) MB"
+            $tempObj | Add-Member -MemberType NoteProperty -Name PageFile -Value $pagefileObj
             $outputObj += $tempObj
         }
     }
 
     END {
-            Write-Output $outputObj
-        }
+        Write-Output $outputObj
+    }
 }
